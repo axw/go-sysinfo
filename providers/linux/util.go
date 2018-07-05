@@ -20,25 +20,26 @@ package linux
 import (
 	"bufio"
 	"bytes"
+	"io"
 	"io/ioutil"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 )
 
-func parseKeyValue(content []byte, separator string, callback func(key, value []byte) error) error {
-	sc := bufio.NewScanner(bytes.NewReader(content))
+func parseKeyValue(r io.Reader, separator string, callback func(key, value string) error) error {
+	sc := bufio.NewScanner(r)
 	for sc.Scan() {
-		parts := bytes.SplitN(sc.Bytes(), []byte(separator), 2)
-		if len(parts) != 2 {
+		line := sc.Text()
+		i := strings.Index(line, separator)
+		if i == -1 {
 			continue
 		}
-
-		if err := callback(parts[0], bytes.TrimSpace(parts[1])); err != nil {
+		if err := callback(line[:i], strings.TrimSpace(line[i+1:])); err != nil {
 			return err
 		}
 	}
-
 	return sc.Err()
 }
 

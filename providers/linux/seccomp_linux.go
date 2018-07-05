@@ -18,6 +18,7 @@
 package linux
 
 import (
+	"bytes"
 	"strconv"
 
 	"github.com/elastic/go-sysinfo/types"
@@ -47,16 +48,16 @@ func (m SeccompMode) String() string {
 func readSeccompFields(content []byte) (*types.SeccompInfo, error) {
 	var seccomp types.SeccompInfo
 
-	err := parseKeyValue(content, ":", func(key, value []byte) error {
-		switch string(key) {
+	err := parseKeyValue(bytes.NewReader(content), ":", func(key, value string) error {
+		switch key {
 		case "Seccomp":
-			mode, err := strconv.ParseUint(string(value), 10, 8)
+			mode, err := strconv.ParseUint(value, 10, 8)
 			if err != nil {
 				return err
 			}
 			seccomp.Mode = SeccompMode(mode).String()
 		case "NoNewPrivs":
-			noNewPrivs, err := strconv.ParseBool(string(value))
+			noNewPrivs, err := strconv.ParseBool(value)
 			if err != nil {
 				return err
 			}

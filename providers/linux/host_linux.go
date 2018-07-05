@@ -18,7 +18,6 @@
 package linux
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -61,12 +60,12 @@ func (h *host) Info() types.HostInfo {
 }
 
 func (h *host) Memory() (*types.HostMemoryInfo, error) {
-	content, err := ioutil.ReadFile(h.procFS.Path("meminfo"))
+	f, err := os.Open(h.procFS.Path("meminfo"))
 	if err != nil {
 		return nil, err
 	}
-
-	return parseMemInfo(content)
+	defer f.Close()
+	return parseHostMemoryInfo(f)
 }
 
 func (h *host) CPUTime() (*types.CPUTimes, error) {

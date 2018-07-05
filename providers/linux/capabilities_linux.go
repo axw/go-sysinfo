@@ -18,6 +18,7 @@
 package linux
 
 import (
+	"bytes"
 	"strconv"
 
 	"github.com/elastic/go-sysinfo/types"
@@ -81,31 +82,31 @@ func capabilityName(num int) string {
 func readCapabilities(content []byte) (*types.CapabilityInfo, error) {
 	var cap types.CapabilityInfo
 
-	err := parseKeyValue(content, ":", func(key, value []byte) error {
+	err := parseKeyValue(bytes.NewReader(content), ":", func(key, value string) error {
 		var err error
-		switch string(key) {
+		switch key {
 		case "CapInh":
-			cap.Inheritable, err = decodeBitMap(string(value), capabilityName)
+			cap.Inheritable, err = decodeBitMap(value, capabilityName)
 			if err != nil {
 				return err
 			}
 		case "CapPrm":
-			cap.Permitted, err = decodeBitMap(string(value), capabilityName)
+			cap.Permitted, err = decodeBitMap(value, capabilityName)
 			if err != nil {
 				return err
 			}
 		case "CapEff":
-			cap.Effective, err = decodeBitMap(string(value), capabilityName)
+			cap.Effective, err = decodeBitMap(value, capabilityName)
 			if err != nil {
 				return err
 			}
 		case "CapBnd":
-			cap.Bounding, err = decodeBitMap(string(value), capabilityName)
+			cap.Bounding, err = decodeBitMap(value, capabilityName)
 			if err != nil {
 				return err
 			}
 		case "CapAmb":
-			cap.Ambient, err = decodeBitMap(string(value), capabilityName)
+			cap.Ambient, err = decodeBitMap(value, capabilityName)
 			if err != nil {
 				return err
 			}
